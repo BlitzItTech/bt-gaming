@@ -1,0 +1,13 @@
+services:
+  btgaming-api:
+    build: .
+    container_name: btgaming-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    networks:
+      - proxy-tier
+
+networks:
+  proxy-tier:
+    external: true
