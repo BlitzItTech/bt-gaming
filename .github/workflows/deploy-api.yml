@@ -3,8 +3,7 @@ name: Build and Push API Docker Image
 on:
   push:
     branches: [ "main" ]
-    paths:
-      - 'bt-gaming-api/**' # Only trigger if changes are made to the API folder
+  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
@@ -40,8 +39,8 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: ./bt-gaming-api       # Point context to the subfolder
-          file: ./bt-gaming-api/Dockerfile # Point to the Dockerfile inside it
+          context: ./bt-gaming-api
+          file: ./bt-gaming-api/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
