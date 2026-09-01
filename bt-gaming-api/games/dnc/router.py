@@ -2,15 +2,11 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect
 from games.dnc.manager import manager
 from games.dnc.models import (
-    DNCAddActivity,
-    DNCAddShopItem,
-    DNCAddTeam,
     DNCGameData,
-    DNCGameUpdate,
+    DNCUpdateGameScore,
     DNCJoinGame,
-    DNCNewGame,
+    DNCCreateGame,
     DNCPauseGame,
-    DNCRestartGame,
     DNCUpdateGameSettings,
     DNCTeamState,
     DNCActivity,
@@ -31,9 +27,9 @@ async def get_game_or_404(game_id: str) -> DNCGameData:
         raise HTTPException(status_code=404, detail="Game not found")
     return game
 
-
 async def broadcast_game_update(game_id: str, game: DNCGameData) -> None:
-    """Helper to broadcast game state safely with proper JSON serialization."""
+    """Helper to broadcast game state safely with proper JSON serialization and persist changes."""
+    game_service.save_game(game)  # Persist state changes
     await manager.broadcast_to_group(
         game_id, {"type": "Update", "game": game.model_dump(mode="json")}
     )
@@ -54,32 +50,35 @@ async def dnc_websocket_endpoint(websocket: WebSocket, game_id: str) -> None:
 
 
 @router.post("/create", response_model=DNCGameData)
-async def create_game(data: DNCNewGame) -> DNCGameData:
-    logger.info("r")
-    logger.debug("d")
+async def create_game(data: DNCCreateGame) -> DNCGameData:
     return game_service.create_game(data)
 
 
-@router.post("/join")
+@router.post("/join", response_model=DNCGameData)
 async def join_game(data: DNCJoinGame) -> DNCGameData:
     game = game_service.find_by_code(data.gameCode)
     if not game:
         raise HTTPException(status_code=404, detail="Game not found")
     return game.model_dump()
-    # return {"status": "success", "gameID": game.id}
 
+@router.post("/{game_id}/start", response_model=DNCGameData)
+async def start_game(game: DNCGameData = Depends(get_game_or_404)) -> DNCGameData:
+    if not game.startedOn:
+        game.startedOn = datetime.now(timezone.utc)
+        await broadcast_game_update(game.id, game)
 
-@router.put("/{game_id}/settings", response_model=DNCGameData)
-async def update_settings(
-    data: DNCUpdateGameSettings, game: DNCGameData = Depends(get_game_or_404)
-) -> DNCGameData:
-    game.dayLength = data.dayLength
-    game.days = data.days
-    game.specialDay = data.specialDay
-
-    await broadcast_game_update(game.id, game)
     return game.model_dump()
 
+@router.post("/{game_id}/pause", response_model=DNCGameData)
+async def pause_game(data: DNCPauseGame, game: DNCGameData = Depends(get_game_or_404)) -> DNCGameData:
+    if game.startedOn:
+        game.startedOn = None
+        game.currentDay = data.currentDay
+        game.currentSecond = data.currentSecond
+        game.isDay = data.isDay
+        await broadcast_game_update(game.id, game)
+
+    return game.model_dump()
 
 @router.post("/{game_id}/restart", response_model=DNCGameData)
 async def restart_game(game: DNCGameData = Depends(get_game_or_404)) -> DNCGameData:
@@ -94,100 +93,72 @@ async def restart_game(game: DNCGameData = Depends(get_game_or_404)) -> DNCGameD
     await broadcast_game_update(game.id, game)
     return game.model_dump()
 
+@router.patch("/{game_id}/settings", response_model=DNCGameData)
+async def update_settings(data: DNCUpdateGameSettings, game: DNCGameData = Depends(get_game_or_404)) -> DNCGameData:
+    game.dayLength = data.dayLength
+    game.days = data.days
+    game.specialDay = data.specialDay
+    game.teams = data.teams
+    game.activities = data.activities
+    game.shopItems = data.shopItems
 
-@router.post("/{game_id}/teams", response_model=DNCGameData)
-async def add_team(data: DNCAddTeam, game: DNCGameData = Depends(get_game_or_404)) -> DNCGameData:
-    if not any(t.teamName == data.teamName for t in game.teams):
-        new_team = DNCTeamState(
-            teamName=data.teamName, score=0, scoringFactor=1, color=data.color
-        )
-        game.teams.append(new_team)
-        await broadcast_game_update(game.id, game)
-
-    return game.model_dump()
-
-
-@router.delete("/{game_id}/teams/{team_name}", response_model=DNCGameData)
-async def remove_team(team_name: str, game: DNCGameData = Depends(get_game_or_404)) -> DNCGameData:
-    game.teams = [t for t in game.teams if t.teamName != team_name]
     await broadcast_game_update(game.id, game)
     return game.model_dump()
-
-
-@router.post("/{game_id}/activities", response_model=DNCGameData)
-async def add_activity(data: DNCAddActivity, game: DNCGameData = Depends(get_game_or_404)) -> DNCGameData:
-    if not any(a.activityName == data.activityName for a in game.activities):
-        game.activities.append(
-            DNCActivity(
-                activityName=data.activityName,
-                description=data.description,
-                points=data.points,
-            )
-        )
-        await broadcast_game_update(game.id, game)
-
-    return game.model_dump()
-
-
-@router.delete("/{game_id}/activities/{activity_name}", response_model=DNCGameData)
-async def remove_activity(activity_name: str, game: DNCGameData = Depends(get_game_or_404)) -> DNCGameData:
-    game.activities = [
-        a for a in game.activities if a.activityName != activity_name
-    ]
-    await broadcast_game_update(game.id, game)
-    return game.model_dump()
-
-
-@router.post("/{game_id}/shop", response_model=DNCGameData)
-async def add_shop_item(data: DNCAddShopItem, game: DNCGameData = Depends(get_game_or_404)) -> DNCGameData:
-    if not any(s.itemName == data.itemName for s in game.shopItems):
-        game.shopItems.append(
-            DNCShopItem(
-                itemName=data.itemName,
-                description=data.description,
-                cost=data.cost,
-            )
-        )
-        await broadcast_game_update(game.id, game)
-
-    return game.model_dump()
-
-
-@router.delete("/{game_id}/shop/{item_name}", response_model=DNCGameData)
-async def remove_shop_item(item_name: str, game: DNCGameData = Depends(get_game_or_404)) -> DNCGameData:
-    game.shopItems = [s for s in game.shopItems if s.itemName != item_name]
-    await broadcast_game_update(game.id, game)
-    return game.model_dump()
-
-
-@router.post("/{game_id}/start", response_model=DNCGameData)
-async def start_game(game: DNCGameData = Depends(get_game_or_404)) -> DNCGameData:
-    if not game.startedOn:
-        game.startedOn = datetime.now(timezone.utc)
-        await broadcast_game_update(game.id, game)
-
-    return game.model_dump()
-
-
-@router.post("/{game_id}/pause", response_model=DNCGameData)
-async def pause_game(data: DNCPauseGame, game: DNCGameData = Depends(get_game_or_404)) -> DNCGameData:
-    if game.startedOn:
-        game.startedOn = None
-        game.currentDay = data.currentDay
-        game.currentSecond = data.currentSecond
-        game.isDay = data.isDay
-        await broadcast_game_update(game.id, game)
-
-    return game.model_dump()
-
 
 @router.patch("/{game_id}/score", response_model=DNCGameData)
-async def update_score(data: DNCGameUpdate, game: DNCGameData = Depends(get_game_or_404)) -> DNCGameData:
+async def update_score(data: DNCUpdateGameScore, game: DNCGameData = Depends(get_game_or_404)) -> DNCGameData:
     team = next((t for t in game.teams if t.teamName == data.teamName), None)
     if team:
         team.score += data.scoreAdjustment
-        if data.color:
-            team.color = data.color
         await broadcast_game_update(game.id, game)
 
     return game.model_dump()
+
+# @router.post("/{game_id}/teams", response_model=DNCGameData)
+# async def add_team(data: DNCAddTeam, game: DNCGameData = Depends(get_game_or_404)) -> DNCGameData:
+#     if not any(t.teamName == data.teamName for t in game.teams):
+#         new_team = DNCTeamState(
+#             teamName=data.teamName, score=0, scoringFactor=1, color=data.color
+#         )
+#         game.teams.append(new_team)
+#         await broadcast_game_update(game.id, game)
+
+#     return game.model_dump()
+
+
+# @router.delete("/{game_id}/teams/{team_name}", response_model=DNCGameData)
+# async def remove_team(team_name: str, game: DNCGameData = Depends(get_game_or_404)) -> DNCGameData:
+#     game.teams = [t for t in game.teams if t.teamName != team_name]
+#     await broadcast_game_update(game.id, game)
+#     return game.model_dump()
+
+
+# --- Activity Management (Game-specific + Global Activities Table integration) ---
+
+
+@router.get("/activities", response_model=list[DNCActivity])
+async def get_all_global_activities():
+    """Retrieve all activities stored in the global activities table/collection."""
+    return game_service.get_all_activities()
+
+@router.post("/add-activity", response_model=DNCActivity)
+async def add_activity(data: DNCActivity) -> DNCActivity:
+    return game_service.add_activity(data)
+
+@router.post("/remove-activity")
+async def remove_activity(id: str):
+    return game_service.remove_activity(id)
+
+
+
+@router.get("/shop-items", response_model=list[DNCShopItem])
+async def get_all_global_shop_items():
+    return game_service.get_all_shop_items()
+
+@router.post("/add-shop-item", response_model=DNCShopItem)
+async def add_shop_item(data: DNCShopItem) -> DNCShopItem:
+    return game_service.add_shop_item(data)
+
+@router.post("/remove-shop-item")
+async def remove_shop_item(id: str):
+    return game_service.remove_shop_item(id)

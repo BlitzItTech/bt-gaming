@@ -1,0 +1,14 @@
+{
+    "7e1a49d9-5d04-48fb-99e9-43899bcd3772": {
+        "id": "7e1a49d9-5d04-48fb-99e9-43899bcd3772",
+        "itemName": "My Shop Item",
+        "description": "D",
+        "cost": 7
+    },
+    "7cfca6ca-4971-4461-aebe-3b2b212f9dfc": {
+        "id": "7cfca6ca-4971-4461-aebe-3b2b212f9dfc",
+        "itemName": "Ping Pong Ball",
+        "description": "This can help play a game of ping pong",
+        "cost": 55
+    }
+}

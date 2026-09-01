@@ -3,15 +3,18 @@ from typing import List, Optional
 from pydantic import BaseModel, Field
 import uuid
 
-class DNCActivity(BaseModel):
-    activityName: Optional[str] = None
-    description: Optional[str] = None
-    points: Optional[int] = None
-
 class DNCShopItem(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     itemName: Optional[str] = None
     description: Optional[str] = None
     cost: Optional[int] = None
+
+class DNCActivity(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    activityName: Optional[str] = None
+    description: Optional[str] = None
+    points: Optional[int] = None
+    # shopItems: List[DNCShopItem] = []
 
 class DNCTeamState(BaseModel):
     teamName: Optional[str] = None
@@ -34,38 +37,16 @@ class DNCGameData(BaseModel):
     activities: List[DNCActivity] = []
     shopItems: List[DNCShopItem] = []
 
-class DNCNewGame(BaseModel):
+class DNCCreateGame(BaseModel):
     days: int
     dayLength: int
     specialDay: int = 0
     activities: List[DNCActivity] = []
+    shopItems: List[DNCShopItem] = []
+    teams: List[DNCTeamState] = []
 
 class DNCJoinGame(BaseModel):
     gameCode: Optional[str] = None
-
-class DNCUpdateGameSettings(BaseModel):
-    id: Optional[str] = None
-    days: int
-    dayLength: int
-    specialDay: int = 0
-
-class DNCRestartGame(BaseModel):
-    id: Optional[str] = None
-
-class DNCAddTeam(BaseModel):
-    gameID: Optional[str] = None
-    teamName: Optional[str] = None
-    color: Optional[str] = None
-
-class DNCRemoveTeam(BaseModel):
-    gameID: Optional[str] = None
-    teamName: Optional[str] = None
-
-class DNCAddActivity(DNCActivity):
-    gameID: Optional[str] = None
-
-class DNCAddShopItem(DNCShopItem):
-    gameID: Optional[str] = None
 
 class DNCPauseGame(BaseModel):
     id: Optional[str] = None
@@ -73,8 +54,35 @@ class DNCPauseGame(BaseModel):
     currentSecond: int
     isDay: bool = False
 
-class DNCGameUpdate(BaseModel):
+# class DNCRestartGame(BaseModel):
+#     id: Optional[str] = None
+
+
+class DNCUpdateGameSettings(BaseModel):
+    id: Optional[str] = None
+    days: int
+    dayLength: int
+    specialDay: int = 0
+    activities: List[DNCActivity] = []
+    shopItems: List[DNCShopItem] = []
+    teams: List[DNCTeamState] = []
+
+class DNCUpdateGameScore(BaseModel):
     id: Optional[str] = None
     teamName: Optional[str] = None
     scoreAdjustment: int
-    color: Optional[str] = None
+
+# class DNCAddTeam(BaseModel):
+#     gameID: Optional[str] = None
+#     teamName: Optional[str] = None
+#     color: Optional[str] = None
+
+# class DNCRemoveTeam(BaseModel):
+#     gameID: Optional[str] = None
+#     teamName: Optional[str] = None
+
+# class DNCAddActivity(DNCActivity):
+#     gameID: Optional[str] = None
+
+# class DNCAddShopItem(DNCShopItem):
+#     gameID: Optional[str] = None
