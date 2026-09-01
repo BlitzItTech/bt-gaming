@@ -16,6 +16,9 @@ export default createCore({
     urls: {
         production: {
             data: 'https://api.gaming.blitzitweb.com.au/api/dnc',
+            origins: [
+                'https://gaming.blitzitweb.com.au'
+            ],
             other: {
                 websocket: 'ws://api.gaming.blitzitweb.com.au/api/dnc/ws'
             }
