@@ -4,6 +4,7 @@ from games.dnc.router import router as dnc_router
 
 app = FastAPI(title="BTGaming Platform API", version="1.0")
 
+
 # Define allowed frontend origins
 origins = [
     "https://gaming.blitzitweb.com.au",
