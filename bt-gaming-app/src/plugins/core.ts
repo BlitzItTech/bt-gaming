@@ -15,7 +15,10 @@ export default createCore({
     },
     urls: {
         production: {
-            data: 'http://127.0.0',
+            data: 'https://api.gaming.blitzitweb.com.au/api/dnc',
+            other: {
+                websocket: 'ws://api.gaming.blitzitweb.com.au/api/dnc/ws'
+            }
         },
         staging: {
             data: 'http://127.0.0.1:8000/api/dnc',
