@@ -349,7 +349,7 @@
             :max-height="400"
             variant="pure">
             <template #listItem="{ item }">
-              <v-list-item
+              <v-card
                 class="ma-0 pa-0"
                 @click.stop="item.isSelected = !item.isSelected"
                 :subtitle="`Points: ${item.activity.points}`"
@@ -361,7 +361,7 @@
                     <v-btn v-else icon="$close" class="text-error" />
                   </v-slide-y-reverse-transition>
                 </template>
-              </v-list-item>
+              </v-card>
             </template>
           </bt-blade-items>
           <v-btn block @click="stage = 4">Create New Activity</v-btn>
@@ -410,7 +410,7 @@
             :max-height="400"
             variant="pure">
             <template #listItem="{ item }">
-              <v-list-item
+              <v-card
                 class="ma-0 pa-0"
                 @click.stop="item.isSelected = !item.isSelected"
                 :subtitle="`Cost: ${item.shopItem.cost}`"
@@ -422,7 +422,7 @@
                     <v-btn v-else icon="$close" class="text-error" />
                   </v-slide-y-reverse-transition>
                 </template>
-              </v-list-item>
+              </v-card>
             </template>
           </bt-blade-items>
           <v-btn block @click="stage = 6">Create New Shop Item</v-btn>
@@ -431,7 +431,7 @@
         </v-card>
       </v-window-item>
       <v-window-item> <!--6-->
-        <v-card class="pa-5 mx-auto" title="New Activity" width="300">
+        <v-card class="pa-5 mx-auto" title="New Shop Item" width="300">
           <template #prepend>
             <v-btn @click="stage = 5" icon="$arrow-left" variant="text" />
           </template>
