@@ -20,7 +20,7 @@ export default createCore({
                 'https://gaming.blitzitweb.com.au'
             ],
             other: {
-                websocket: 'ws://api.gaming.blitzitweb.com.au/api/dnc/ws'
+                websocket: 'wss://api.gaming.blitzitweb.com.au/api/dnc/ws'
             }
         },
         staging: {
