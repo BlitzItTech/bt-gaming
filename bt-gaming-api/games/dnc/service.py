@@ -5,10 +5,13 @@ from typing import Dict, List, Optional
 import uuid
 from .models import DNCGameData, DNCCreateGame, DNCActivity, DNCShopItem
 
-GAMES_DB_FILE = Path("games_db.json")
-ACTIVITIES_DB_FILE = Path("activities_db.json")
-SHOP_ITEMS_DB_FILE = Path("shop_items_db.json")
+# Read data directory from environment variable, default to current dir for local dev
+DATA_DIR = Path(os.getenv("DATA_DIR", "."))
+DATA_DIR.mkdir(parents=True, exist_ok=True)
 
+GAMES_DB_FILE = DATA_DIR / "games_db.json"
+ACTIVITIES_DB_FILE = DATA_DIR / "activities_db.json"
+SHOP_ITEMS_DB_FILE = DATA_DIR / "shop_items_db.json"
 
 class DNCGameService:
 
