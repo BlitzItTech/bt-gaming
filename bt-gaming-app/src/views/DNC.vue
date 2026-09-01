@@ -346,7 +346,7 @@
           </template>
           <bt-blade-items
             :items="allActivities"
-            :max-height="400"
+            :max-height="200"
             variant="pure">
             <template #listItem="{ item }">
               <v-card
@@ -357,8 +357,8 @@
                 :title="item.activity.activityName">
                 <template #prepend>
                   <v-slide-y-reverse-transition hide-on-leave>
-                    <v-btn v-if="item.isSelected" icon="$check" class="text-success" />
-                    <v-btn v-else icon="$close" class="text-error" />
+                    <v-btn v-if="item.isSelected" icon="$check" class="text-success" variant="text" />
+                    <v-btn v-else icon="$close" class="text-error" variant="text" />
                   </v-slide-y-reverse-transition>
                 </template>
               </v-card>
@@ -407,7 +407,7 @@
           </template>
           <bt-blade-items
             :items="allShopItems"
-            :max-height="400"
+            :max-height="200"
             variant="pure">
             <template #listItem="{ item }">
               <v-card
@@ -418,8 +418,8 @@
                 :title="item.shopItem.itemName">
                 <template #prepend>
                   <v-slide-y-reverse-transition hide-on-leave>
-                    <v-btn v-if="item.isSelected" icon="$check" class="text-success" />
-                    <v-btn v-else icon="$close" class="text-error" />
+                    <v-btn v-if="item.isSelected" icon="$check" class="text-success" variant="text" />
+                    <v-btn v-else icon="$close" class="text-error" variant="text" />
                   </v-slide-y-reverse-transition>
                 </template>
               </v-card>
