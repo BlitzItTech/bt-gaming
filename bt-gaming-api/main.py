@@ -8,6 +8,7 @@ app = FastAPI(title="BTGaming Platform API", version="1.0")
 # Define allowed frontend origins
 origins = [
     "https://gaming.blitzitweb.com.au",
+    "https://gaming.blitzitweb.com.au/",
     "http://localhost:5173",  # For local Vite development
     "http://localhost:3000",  # Alternative local port
 ]
