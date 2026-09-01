@@ -340,13 +340,13 @@
         </v-card>
       </v-window-item>
       <v-window-item> <!--3-->
-        <v-card class="pa-5 mx-auto" title="Select Activities" width="300">
+        <v-card class="pa-5 mx-auto" title="Select Activities" max-width="400">
           <template #prepend>
             <v-btn @click="stage = 2" icon="$arrow-left" variant="text" />
           </template>
           <bt-blade-items
+            :usedBladeHeight="400"
             :items="allActivities"
-            :max-height="200"
             variant="pure">
             <template #listItem="{ item }">
               <v-card
@@ -370,7 +370,7 @@
         </v-card>
       </v-window-item>
       <v-window-item> <!--4-->
-        <v-card class="pa-5 mx-auto" title="New Activity" width="300">
+        <v-card class="pa-5 mx-auto" title="New Activity" max-width="400">
           <template #prepend>
             <v-btn @click="stage = 3" icon="$arrow-left" variant="text" />
           </template>
@@ -401,13 +401,13 @@
         </v-card>
       </v-window-item>
       <v-window-item> <!--5-->
-        <v-card class="pa-5 mx-auto" title="Select Shop Items" width="300">
+        <v-card class="pa-5 mx-auto" title="Select Shop Items" max-width="400">
           <template #prepend>
             <v-btn @click="stage = 3" icon="$arrow-left" variant="text" />
           </template>
           <bt-blade-items
+            :usedBladeHeight="400"
             :items="allShopItems"
-            :max-height="200"
             variant="pure">
             <template #listItem="{ item }">
               <v-card
@@ -431,7 +431,7 @@
         </v-card>
       </v-window-item>
       <v-window-item> <!--6-->
-        <v-card class="pa-5 mx-auto" title="New Shop Item" width="300">
+        <v-card class="pa-5 mx-auto" title="New Shop Item" max-width="400">
           <template #prepend>
             <v-btn @click="stage = 5" icon="$arrow-left" variant="text" />
           </template>
